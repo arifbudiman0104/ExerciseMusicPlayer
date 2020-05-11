@@ -12,6 +12,7 @@ import android.os.PowerManager;
 import android.util.Log;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 
 public class MusicService extends Service implements
@@ -25,12 +26,16 @@ public class MusicService extends Service implements
     }
 
     @Override
-    public void onCompletion(MediaPlayer mediaPlayer) {
-
+    public void onCompletion(MediaPlayer mp) {
+        if(player.getCurrentPosition()>0){
+            mp.reset();
+            playNext();
+        }
     }
 
     @Override
-    public boolean onError(MediaPlayer mediaPlayer, int i, int i1) {
+    public boolean onError(MediaPlayer mp, int what, int extra) {
+        mp.reset();
         return false;
     }
 
@@ -53,6 +58,7 @@ public class MusicService extends Service implements
         songPosn=0;
         player = new MediaPlayer();
         initMusicPlayer();
+        rand=new Random();
     }
     public void initMusicPlayer(){
         player.setWakeMode(getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
@@ -91,6 +97,55 @@ public class MusicService extends Service implements
             Log.e("MUSIC SERVICE", "Error setting data source", e);
         }
         player.prepareAsync();
+    }
+    public int getPosn(){
+        return player.getCurrentPosition();
+    }
+
+    public int getDur(){
+        return player.getDuration();
+    }
+
+    public boolean isPng(){
+        return player.isPlaying();
+    }
+
+    public void pausePlayer(){
+        player.pause();
+    }
+
+    public void seek(int posn){
+        player.seekTo(posn);
+    }
+
+    public void go(){
+        player.start();
+    }
+
+    public void playPrev(){
+        songPosn--;
+        if(songPosn<0) songPosn=songs.size()-1;
+        playSong();
+    }
+    public void playNext(){
+        if(shuffle){
+            int newSong = songPosn;
+            while(newSong==songPosn){
+                newSong=rand.nextInt(songs.size());
+            }
+            songPosn=newSong;
+        }
+        else{
+            songPosn++;
+            if(songPosn>=songs.size()) songPosn=0;
+        }
+        playSong();
+    }
+    private boolean shuffle=false;
+    private Random rand;
+    public void setShuffle(){
+        if(shuffle) shuffle=false;
+        else shuffle=true;
     }
 
 }
