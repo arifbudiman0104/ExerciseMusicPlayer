@@ -22,9 +22,12 @@ import java.util.Comparator;
 
 
 public class MainActivity extends AppCompatActivity implements MediaPlayerControl {
+
+    //variable untuk list lagu dan kumpulan lagu.
     private ArrayList<Song> songList;
     private ListView songView;
 
+    //variable untuk service musik
     private MusicService musicSrv;
     private Intent playIntent;
     private boolean musicBound=false;
@@ -34,31 +37,41 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        //untuk menyimpan lagu-lagu dalam daftar dan menampilkan dalam tipe ListView
         songView = (ListView)findViewById(R.id.song_list);
+        //untuk memanggil daftar musik
         songList = new ArrayList<Song>();
         getSongList();
 
+        //untuk menampilkan lagu di antarmuka pengguna
         Collections.sort(songList, new Comparator<Song>(){
             public int compare(Song a, Song b){
                 return a.getTitle().compareTo(b.getTitle());
             }
         });
 
+        //untuk memanggil songAdapter yang sudah dibuat
         SongAdapter songAdt = new SongAdapter(this, songList);
         songView.setAdapter(songAdt);
+        //untuk memanggil kontroler
         setController();
     }
+
+    //metod untuk membantu mengambil informasi file suara
     public void getSongList() {
         ContentResolver musicResolver = getContentResolver();
         Uri musicUri = android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
         Cursor musicCursor = musicResolver.query(musicUri, null, null, null, null);
         if(musicCursor!=null && musicCursor.moveToFirst()){
+            //untuk mendapatkan colom judul
             int titleColumn = musicCursor.getColumnIndex
                     (android.provider.MediaStore.Audio.Media.TITLE);
             int idColumn = musicCursor.getColumnIndex
                     (android.provider.MediaStore.Audio.Media._ID);
             int artistColumn = musicCursor.getColumnIndex
                     (android.provider.MediaStore.Audio.Media.ARTIST);
+            //untuk menambah lagu pada list
             do {
                 long thisId = musicCursor.getLong(idColumn);
                 String thisTitle = musicCursor.getString(titleColumn);
@@ -68,12 +81,15 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
             while (musicCursor.moveToNext());
         }
     }
+    //untuk mengkoneksikan ke MusicService
     private ServiceConnection musicConnection = new ServiceConnection(){
 
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             MusicService.MusicBinder binder = (MusicService.MusicBinder)service;
+            //untuk mendapatkan service
             musicSrv = binder.getService();
+            //untuk pass list
             musicSrv.setList(songList);
             musicBound = true;
         }
@@ -104,10 +120,13 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     }
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        //menu item yang dapat dipilih
         switch (item.getItemId()) {
+            //untuk mengacak lagu
             case R.id.action_shuffle:
                 musicSrv.setShuffle();
                 break;
+                //untuk menghentikan musik player
             case R.id.action_end:
                 stopService(playIntent);
                 musicSrv=null;
@@ -192,6 +211,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     }
 
     private MusicController controller;
+    //untuk mengatur kontroler
     private void setController(){
         controller = new MusicController(this);
         controller.setPrevNextListeners(new View.OnClickListener() {

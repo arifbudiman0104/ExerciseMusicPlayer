@@ -10,16 +10,22 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
+//berfungsi untuk memetakan lagu pada tampilan daftar.
 public class SongAdapter extends BaseAdapter {
+    //variable untuk memindahkan lagu dari kelas utama
     private ArrayList<Song> songs;
+    //variable untuk memetakan deretan judul dan artis ke TextView
     private LayoutInflater songInflater;
 
+
+    //metod konstruktor untuk memanggil variable
     public SongAdapter(Context context, ArrayList<Song> theSongs){
         songs=theSongs;
         songInflater=LayoutInflater.from(context);
     }
 
     @Override
+    //untuk mengembalikan ukuran daftar
     public int getCount() {
         return songs.size();
     }
@@ -36,18 +42,18 @@ public class SongAdapter extends BaseAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        //map to song layout
+        //mengumpulkan lagu ke layout lagu
         LinearLayout songLay = (LinearLayout)songInflater.inflate
                 (R.layout.song, parent, false);
-        //get title and artist views
+        //untuk mendapatkan judul dan nama artis
         TextView songView = (TextView)songLay.findViewById(R.id.song_title);
         TextView artistView = (TextView)songLay.findViewById(R.id.song_artist);
-        //get song using position
+        //untuk mendapatkan posisi lagu
         Song currSong = songs.get(position);
-        //get title and artist strings
+        //untuk mendapatkan string judul lagu dan artisnya
         songView.setText(currSong.getTitle());
         artistView.setText(currSong.getArtist());
-        //set position as tag
+        //mengubah posisi sebagai tag
         songLay.setTag(position);
         return songLay;
     }

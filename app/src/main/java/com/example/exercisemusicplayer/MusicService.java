@@ -14,7 +14,9 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.Random;
 
-
+//kelas untuk Music Service
+//extend untuk membuka jalan dari deklarasi kelas supaya mengimplementasikan
+//interface yang akan digunakan pada pemutar musik
 public class MusicService extends Service implements
         MediaPlayer.OnPreparedListener,
         MediaPlayer.OnErrorListener,
@@ -41,7 +43,7 @@ public class MusicService extends Service implements
 
     @Override
     public void onPrepared(MediaPlayer mediaPlayer) {
-        //start playback
+        //untuk playback
         mediaPlayer.start();
     }
 
@@ -49,25 +51,37 @@ public class MusicService extends Service implements
         songPosn=songIndex;
     }
 
+    //media player
     private MediaPlayer player;
+    //list lagu
     private ArrayList<Song> songs;
+    //posisi lagu
     private int songPosn;
 
+    //metod untuk membuat service
     public void onCreate(){
+        //membuat service
         super.onCreate();
+        //menginisialisasi posisi
         songPosn=0;
+        //membuat pemutar
         player = new MediaPlayer();
+
         initMusicPlayer();
         rand=new Random();
     }
+    //metod untuk menginisialisasi Media Player
     public void initMusicPlayer(){
+        //konfigurasi musik player
         player.setWakeMode(getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
         player.setAudioStreamType(AudioManager.STREAM_MUSIC);
+        //untuk membiarkan musik diputar ketika smartphone dalam kondisi idle
         player.setOnPreparedListener(this);
         player.setOnCompletionListener(this);
         player.setOnErrorListener(this);
 
     }
+
     public void setList(ArrayList<Song> theSongs){
         songs=theSongs;
     }
@@ -83,10 +97,14 @@ public class MusicService extends Service implements
         player.release();
         return false;
     }
+    //untuk memutar musik
     public void playSong(){
         player.reset();
+        //untuk mendapatkan musik
         Song playSong = songs.get(songPosn);
+        //untuk mendapatkan id
         long currSong = playSong.getID();
+        //untuk mengatur uri
         Uri trackUri = ContentUris.withAppendedId(
                 android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
                 currSong);
@@ -98,35 +116,39 @@ public class MusicService extends Service implements
         }
         player.prepareAsync();
     }
+
+    //untuk mndapatkan posisi lagu sekarang
     public int getPosn(){
         return player.getCurrentPosition();
     }
-
+    //untuk mendapatkan durasi lagu
     public int getDur(){
         return player.getDuration();
     }
-
+    //untuk mengetahui apakah musik sedang diputar
     public boolean isPng(){
         return player.isPlaying();
     }
-
+    //untuk mengetahui apakah musik sedang di pause
     public void pausePlayer(){
         player.pause();
     }
-
+    //untuk mempercepat lagu
     public void seek(int posn){
         player.seekTo(posn);
     }
-
+    //untuk memulai lagu
     public void go(){
         player.start();
     }
 
+    //untuk memainkan musik sebelumnya
     public void playPrev(){
         songPosn--;
         if(songPosn<0) songPosn=songs.size()-1;
         playSong();
     }
+    //untuk memainkan musik selanjutnya
     public void playNext(){
         if(shuffle){
             int newSong = songPosn;
